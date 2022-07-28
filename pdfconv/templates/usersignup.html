@@ -5,37 +5,16 @@
 user page
 {%endblock%}
 {%block content%}
-<form method="post">
-    {%csrf_token%}
-    <table>
-        <tr>
-            <th>First Name</th>
-            <td><input type="text" name="firstname" ></td>
-        </tr>
-        <tr>
-            <th>Last Name</th>
-            <td><input type="text" name="lastname" ></td>
-        </tr>
-        <tr>
-            <th>Email</th>
-            <td><input type="text" name="email"></td>
-        </tr>
-        <tr>
-            <th>Phone No</th>
-            <td><input type="text" name="phone"></td>
-        </tr>
-        <tr>
-            <th>User Name</th>
-            <td><input type="text" name=" username"></td>
-        </tr>
-        <tr>
-            <th>Password</th>
-            <td><input type="password" name="password"></td>
-        </tr>
-        <tr>
-            
-            <td colspan="2" align="center"><input type="submit" name="signup" value="Register" ></td>
-        </tr>
-</table>
-</form>
+{% load crispy_forms_tags %}
+
+<!--Register-->
+<div class="container py-5">
+    <h1>Register</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ register_form|crispy }}
+        <button class="btn btn-primary" type="submit">Register</button>
+    </form>
+    <p class="text-center">If you already have an account, <a href="/login">login</a> instead.</p>
+</div>
 {%endblock%}
