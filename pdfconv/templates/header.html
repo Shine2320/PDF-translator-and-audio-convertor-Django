@@ -17,7 +17,10 @@
           <a class="nav-link" href="/logout">Logout</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Welcome, {{user.username}}</a>
+          <a class="nav-link" href="user_home">Welcome, {{user.username}}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="user_pdf_upload">Upload PDF</a>
         </li>
   
         {% else %}
@@ -32,7 +35,21 @@
         {% endif %}
       </ul>
     </div>
-  </nav></head>
+  </nav>
+  <style>
+    header.masthead {
+  padding-top: 10rem;
+  padding-bottom: calc(10rem - 4.5rem);
+  background: linear-gradient(to bottom, rgba(92, 77, 66, 0.8) 0%, rgba(92, 77, 66, 0.8) 100%), url("/static/images/home.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+  background-size: cover;
+}
+</style>
+
+
+</head>
     
     <body>
         {%block content%}

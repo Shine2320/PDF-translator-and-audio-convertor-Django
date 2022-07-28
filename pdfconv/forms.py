@@ -18,3 +18,6 @@ class NewUserForm(UserCreationForm):
 		if commit:
 			user.save()
 		return user
+
+class PDFForm(forms.Form):   
+    file= forms.FileField() # for creating file input  
