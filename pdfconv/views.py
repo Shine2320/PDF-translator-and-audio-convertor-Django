@@ -4,6 +4,14 @@ import PyPDF2
 from gtts import gTTS
 
 
+def home(request):
+    return render(request,'home.html')
+
+def usersignup(request):
+    if request.method == 'POST':
+        
+    return render(request,'usersignup.html')
+
 def index(request):
     if request.method == "POST":
 
