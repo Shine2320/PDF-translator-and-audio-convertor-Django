@@ -1,0 +1,25 @@
+
+{% extends "header.html" %}
+
+
+{%block title%}
+User Home page
+{%endblock%}
+{%block content%}
+
+{% load crispy_forms_tags %}
+
+<!--Login--> 
+<div class="container py-5">
+  <h1>Upload PDF</h1>
+
+    <form method="POST" class="post-form" enctype="multipart/form-data">  
+        {% csrf_token %}
+        {{ translate|crispy }}  
+            <button type="submit" class="btn btn-primary">Translate</button>  
+            {%if text %}
+            <p>{{text}}</p>
+            {%endif%}
+    </form>  
+</div>
+{% endblock %}

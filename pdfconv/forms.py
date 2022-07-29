@@ -21,3 +21,23 @@ class NewUserForm(UserCreationForm):
 
 class PDFForm(forms.Form):   
     file= forms.FileField() # for creating file input  
+
+from_languages =(
+	('auto','Auto Detect'),
+    ('ml', 'Malayalam'),
+	('kn', 'Kannada'),
+    ('en', 'English'),
+    ('hi', 'Hindi'),
+    ('ta', 'Tamil')
+)
+languages =(
+    ('ml', 'Malayalam'),
+	('kn', 'Kannada'),
+    ('en', 'English'),
+    ('hi', 'Hindi'),
+    ('ta', 'Tamil')
+)
+class PDFtranslate(forms.Form):
+	file = forms.FileField() # for creating file input
+	from_language = forms.ChoiceField(choices = from_languages)
+	to_language = forms.ChoiceField(choices = languages)

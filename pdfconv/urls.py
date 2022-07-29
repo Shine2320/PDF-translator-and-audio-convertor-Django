@@ -10,4 +10,5 @@ urlpatterns = [
     path("user_pdf_upload", views.user_pdf_upload, name= "user_pdf_upload"),
     path("user_audio_download", views.user_audio_download, name= "user_audio_download"),
     path("user_audio_play", views.user_audio_play, name= "user_audio_play"),
+    path("user_pdf_translate", views.user_pdf_translate, name= "user_pdf_translate")
 ]

@@ -9,12 +9,13 @@ from gtts import gTTS
 from django.contrib.auth.models import User
 from pdfconv.functions import handle_uploaded_file
 from pdfconv.models import UserAudio, UserPDF
-from .forms import NewUserForm, PDFForm
+from .forms import NewUserForm, PDFForm, PDFtranslate
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, authenticate, logout 
 from django.utils.crypto import get_random_string
+from googletrans import Translator
 
 def home(request):
     return render(request,'home.html')
@@ -59,8 +60,8 @@ def user_home(request):
     return render(request, 'user_home.html')
 def user_pdf_upload(request):
     if request.method == 'POST':  
-        student = PDFForm(request.POST, request.FILES)  
-        if student.is_valid(): 
+        pdf_upload = PDFForm(request.POST, request.FILES)  
+        if pdf_upload.is_valid(): 
             user_pdf=UserPDF()
             unique_id = get_random_string(length=32)
             request.session['unique_id'] = unique_id
@@ -95,10 +96,10 @@ def user_pdf_upload(request):
             audio_save.filename=filename+"converted.mp3"
             audio_save.save()
             status="success" 
-            return render(request,"user_pdf_upload.html",context={'pdf_upload':student,'status':status})
+            return render(request,"user_pdf_upload.html",context={'pdf_upload':pdf_upload,'status':status})
     else:
-        student = PDFForm()  
-        return render(request,"user_pdf_upload.html",context={'pdf_upload':student})
+        pdf_upload = PDFForm()  
+        return render(request,"user_pdf_upload.html",context={'pdf_upload':pdf_upload})
       
 def user_audio_play(request):
     user_file_name=UserAudio.objects.values('filename').filter(pdf__user=request.user.id,pdf__unique_id=request.session['unique_id'])
@@ -117,4 +118,40 @@ def user_audio_download(request):
     response['Content-Disposition'] = "attachment; filename=%s" % filename
     # Return the response value
     return response
+
+def user_pdf_translate(request):
+    if request.method == 'POST':
+        pdf_upload = PDFtranslate(request.POST, request.FILES)  
+        if pdf_upload.is_valid(): 
+            user_pdf=UserPDF()
+            unique_id = get_random_string(length=32)
+            request.session['unique_id'] = unique_id
+            print(unique_id)
+            user_instance=User.objects.get(id=request.user.id)
+            user_pdf.user = user_instance
+            user_pdf.unique_id = unique_id #add this line
+            user_pdf.pdffile = request.FILES['file']
+            user_pdf.save()
+            handle_uploaded_file(request.FILES['file']) 
+            user_file_name=UserPDF.objects.values('pdffile').filter(user=request.user.id,unique_id=unique_id)  
+            # path of the PDF file
+            path = open("media/"+user_file_name[0]['pdffile'], 'rb')  
+            pdfReader = PyPDF2.PdfFileReader(path)
+            # count=pdfReader.numPages
+            # for i in range(count):
+            text =''
+            count=pdfReader.numPages
+
+            for i in range(count):
+                from_page = pdfReader.getPage(i)
+                # # extracting the text from the PDF
+                text += from_page.extractText()
+            translator = Translator(service_urls=['translate.googleapis.com'])
+            data=translator.translate(text,dest=request.POST['to_language'])
+            print(data.text)
+            text = data.text
+            form = PDFtranslate()
+            return render(request, 'user_pdf_translate.html',context={'text':text,'translate':form })
+    form = PDFtranslate()
+    return render(request, 'user_pdf_translate.html',context={'translate':form})
 
