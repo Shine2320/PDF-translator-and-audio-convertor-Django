@@ -1,16 +1,20 @@
+from lib2to3.pytree import convert
 import mimetypes
+from os import stat
 from django.shortcuts import render,redirect
 from django.http import HttpResponse
 import PyPDF2
+from datetime import datetime
 from gtts import gTTS
 from django.contrib.auth.models import User
 from pdfconv.functions import handle_uploaded_file
-from pdfconv.models import UserPDF
+from pdfconv.models import UserAudio, UserPDF
 from .forms import NewUserForm, PDFForm
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, authenticate, logout 
+from django.utils.crypto import get_random_string
 
 def home(request):
     return render(request,'home.html')
@@ -74,33 +78,44 @@ def user_pdf_upload(request):
     if request.method == 'POST':  
         student = PDFForm(request.POST, request.FILES)  
         if student.is_valid(): 
-            user_pdf=UserPDF() 
+            user_pdf=UserPDF()
+            unique_id = get_random_string(length=32)
+            request.session['unique_id'] = unique_id
+            print(unique_id)
             user_instance=User.objects.get(id=request.user.id)
             user_pdf.user = user_instance
+            user_pdf.unique_id = unique_id #add this line
             user_pdf.filename = request.FILES['file'].name
             user_pdf.save()
-            handle_uploaded_file(request.FILES['file'])  
-            return redirect("pdf_convert_to_audio")  
-    else:  
+            handle_uploaded_file(request.FILES['file']) 
+            user_file_name=UserPDF.objects.values('filename').filter(user=request.user.id,unique_id=unique_id)  
+            # path of the PDF file
+            path = open('pdfconv/static/upload/'+user_file_name[0]['filename'], 'rb')        
+            # creating a PdfFileReader object
+            pdfReader = PyPDF2.PdfFileReader(path)        
+            # the page with which you want to start
+            # this will read the page of 25th page.
+            text =''
+            count=pdfReader.numPages
+            for i in range(count):
+                from_page = pdfReader.getPage(i)
+                # # extracting the text from the PDF
+                text += from_page.extractText()        
+            # reading the text
+            tts = gTTS(text)
+            tts.save("pdfconv/static/audio/"+user_file_name[0]['filename']+"converted.mp3")
+            audio_save=UserAudio()
+            audio_save=
+            status="success" 
+            return render(request,"user_pdf_upload.html",context={'pdf_upload':student,'status':status})
+    else:
         student = PDFForm()  
-        return render(request,"user_pdf_upload.html",{'pdf_upload':student})  
-def pdf_convert_to_audio(request):
-    user_file_name=UserPDF.objects.values('filename').filter(user=request.user.id)  
-    # path of the PDF file
-    path = open('pdfconv/static/upload/'+user_file_name[0]['filename'], 'rb')        
-    # creating a PdfFileReader object
-    pdfReader = PyPDF2.PdfFileReader(path)        
-    # the page with which you want to start
-    # this will read the page of 25th page.
-    text =''
-    count=pdfReader.numPages
-    for i in range(count):
-        from_page = pdfReader.getPage(i)
-        # # extracting the text from the PDF
-        text += from_page.extractText()        
-    # reading the text
-    tts = gTTS(text)
-    tts.save("pdfconv/static/audio/"+user_file_name[0]['filename']+"converted.mp3")
+        return render(request,"user_pdf_upload.html",context={'pdf_upload':student})
+      
+# def user_pdf_play(request):
+    
+def download_audio(request):
+    user_file_name=UserPDF.objects.values('filename').filter(user=request.user.id,unique_id=request.session['unique_id'])
     path = open("pdfconv/static/audio/"+user_file_name[0]['filename']+"converted.mp3", 'rb')
     # Set the mime type
     mime_type, _ = mimetypes.guess_type("pdfconv/static/audio/"+user_file_name[0]['filename']+"converted.mp3")
