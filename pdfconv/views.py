@@ -96,6 +96,7 @@ def user_pdf_upload(request):
             audio_save.filename=filename+"converted.mp3"
             audio_save.save()
             status="success" 
+            messages.success(request, "PDF Converted Successfully" )
             return render(request,"user_pdf_upload.html",context={'pdf_upload':pdf_upload,'status':status})
     else:
         pdf_upload = PDFForm()  
@@ -116,6 +117,7 @@ def user_audio_download(request):
     # Set the HTTP header for sending to browser
     filename=user_file_name[0]['filename']
     response['Content-Disposition'] = "attachment; filename=%s" % filename
+    messages.success(request, "Audio File Has Started Downloading" )
     # Return the response value
     return response
 
@@ -151,6 +153,7 @@ def user_pdf_translate(request):
             print(data.text)
             text = data.text
             form = PDFtranslate()
+            messages.success(request, "PDF Translated Successfully" )
             return render(request, 'user_pdf_translate.html',context={'text':text,'translate':form })
     form = PDFtranslate()
     return render(request, 'user_pdf_translate.html',context={'translate':form})
