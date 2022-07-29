@@ -85,12 +85,12 @@ def user_pdf_upload(request):
             user_instance=User.objects.get(id=request.user.id)
             user_pdf.user = user_instance
             user_pdf.unique_id = unique_id #add this line
-            user_pdf.filename = request.FILES['file'].name
+            user_pdf.pdffile = request.FILES['file']
             user_pdf.save()
             handle_uploaded_file(request.FILES['file']) 
-            user_file_name=UserPDF.objects.values('filename').filter(user=request.user.id,unique_id=unique_id)  
+            user_file_name=UserPDF.objects.values('pdffile').filter(user=request.user.id,unique_id=unique_id)  
             # path of the PDF file
-            path = open('pdfconv/static/upload/'+user_file_name[0]['filename'], 'rb')        
+            path = open("media/"+user_file_name[0]['pdffile'], 'rb')        
             # creating a PdfFileReader object
             pdfReader = PyPDF2.PdfFileReader(path)        
             # the page with which you want to start
@@ -102,28 +102,36 @@ def user_pdf_upload(request):
                 # # extracting the text from the PDF
                 text += from_page.extractText()        
             # reading the text
+            filename=user_file_name[0]['pdffile']
+            dummy,filename=filename.split('/')
+            filename,dummy=filename.split('_')
             tts = gTTS(text)
-            tts.save("pdfconv/static/audio/"+user_file_name[0]['filename']+"converted.mp3")
+            tts.save("media/audio/"+filename+"converted.mp3")
             audio_save=UserAudio()
-            audio_save=
+            audio_save.pdf=user_pdf
+            audio_save.filename=filename+"converted.mp3"
+            audio_save.save()
             status="success" 
             return render(request,"user_pdf_upload.html",context={'pdf_upload':student,'status':status})
     else:
         student = PDFForm()  
         return render(request,"user_pdf_upload.html",context={'pdf_upload':student})
       
-# def user_pdf_play(request):
+def user_audio_play(request):
+    user_file_name=UserAudio.objects.values('filename').filter(pdf__user=request.user.id,pdf__unique_id=request.session['unique_id'])
+    filename = user_file_name[0]['filename']
+    return render(request,"user_audio_play.html",context={'filename':filename})
     
-def download_audio(request):
-    user_file_name=UserPDF.objects.values('filename').filter(user=request.user.id,unique_id=request.session['unique_id'])
-    path = open("pdfconv/static/audio/"+user_file_name[0]['filename']+"converted.mp3", 'rb')
+def user_audio_download(request):
+    user_file_name=UserAudio.objects.values('filename').filter(pdf__user=request.user.id,pdf__unique_id=request.session['unique_id'])
+    path = open("media/audio/"+user_file_name[0]['filename'], 'rb')
     # Set the mime type
-    mime_type, _ = mimetypes.guess_type("pdfconv/static/audio/"+user_file_name[0]['filename']+"converted.mp3")
+    mime_type, _ = mimetypes.guess_type("media/audio/"+user_file_name[0]['filename'])
     # Set the return value of the HttpResponse
     response = HttpResponse(path, content_type=mime_type)
     # Set the HTTP header for sending to browser
-    filename=user_file_name[0]['filename']+"converted.mp3"
+    filename=user_file_name[0]['filename']
     response['Content-Disposition'] = "attachment; filename=%s" % filename
     # Return the response value
     return response
-    
+
