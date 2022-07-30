@@ -1,5 +1,5 @@
 str="pdf/SREEHARI_VPbHEug.pdf"
-str=str.replace('.','')
+str=str.replace('.pdf','')
 m,s=str.split('/')
 
 s,m=s.split('_')

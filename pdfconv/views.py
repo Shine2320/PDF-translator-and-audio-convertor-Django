@@ -89,7 +89,7 @@ def user_pdf_upload(request):
             text = ''
             count = pdfReader.numPages
             for i in range(count):
-                print('this')
+                
                 from_page = pdfReader.getPage(i)
                 # # extracting the text from the PDF
                 text += from_page.extractText()
@@ -126,9 +126,13 @@ def user_audio_download(request):
     # Set the mime type
     mime_type, _ = mimetypes.guess_type("media/audio/" + user_file_name[0]['filename'])
     # Set the return value of the HttpResponse
-    response = HttpResponse(path, content_type=mime_type)
+    response = HttpResponse(path, content_type='audio/mpeg')
     # Set the HTTP header for sending to browser
     filename = request.session['filename']
+    
+    filename = filename.replace('.pdf','')
+    filename =filename+'.mp3'
+    
     response['Content-Disposition'] = "attachment; filename=%s" % filename
     
     # Return the response value
@@ -170,6 +174,7 @@ def user_pdf_translate(request):
             text = data.text
             form = PDFtranslate()
             messages.success(request, "PDF Translated Successfully")
-            return render(request, 'user_pdf_translate.html', context={'text': text, 'translate': form})
+            status ="success"
+            return render(request, 'user_pdf_translate.html', context={'text': text, 'translate': form,'status': status})
     form = PDFtranslate()
     return render(request, 'user_pdf_translate.html', context={'translate': form})

@@ -16,9 +16,12 @@ User Home page
     <form method="POST" class="post-form" enctype="multipart/form-data">  
         {% csrf_token %}
         {{ translate|crispy }}  
-            <button type="submit" class="btn btn-primary">Translate</button>  
+        <br>
+            <button type="submit" class="btn btn-primary">🔁 Translate</button> &nbsp &nbsp &nbsp  
+            
             {%if text %}
-            <p>{{text}}</p>
+            <a class="btn btn-danger" href='user_pdf_translate'>🔁 Translate Again</a><br><br>
+            <p style='background:#dce6ef;padding:25px;border-radius:5px;'>{{text}}</p>
             {%endif%}
     </form>  
 </div>
