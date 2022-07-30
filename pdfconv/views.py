@@ -75,9 +75,12 @@ def user_pdf_upload(request):
             user_pdf.unique_id = unique_id  # add this line
             user_pdf.pdffile = request.FILES['file']
             user_pdf.save()
+            filename=request.FILES['file'].name
+            request.session['filename']=filename
             handle_uploaded_file(request.FILES['file'])
             user_file_name = UserPDF.objects.values('pdffile').filter(user=request.user.id, unique_id=unique_id)
             # path of the PDF file
+            print(user_file_name[0]['pdffile'])
             path = open("media/" + user_file_name[0]['pdffile'], 'rb')
             # creating a PdfFileReader object
             pdfReader = PyPDF2.PdfFileReader(path)
@@ -86,18 +89,20 @@ def user_pdf_upload(request):
             text = ''
             count = pdfReader.numPages
             for i in range(count):
+                print('this')
                 from_page = pdfReader.getPage(i)
                 # # extracting the text from the PDF
                 text += from_page.extractText()
-                # reading the text
-            filename = user_file_name[0]['pdffile']
-            dummy, filename = filename.split('/')
-            filename, dummy = filename.split('_')
+                # reading the text 
+                      
             tts = gTTS(text)
-            tts.save("media/audio/" + filename + "converted.mp3")
+            directory=user_file_name[0]['pdffile']
+            dummy,directory=directory.split('/')
+            directory=directory.replace('.','')
+            tts.save("media/audio/" + directory + "converted.mp3")
             audio_save = UserAudio()
             audio_save.pdf = user_pdf
-            audio_save.filename = filename + "converted.mp3"
+            audio_save.filename = directory + "converted.mp3"
             audio_save.save()
             status = "success"
             messages.success(request, "PDF Converted Successfully")
@@ -123,9 +128,9 @@ def user_audio_download(request):
     # Set the return value of the HttpResponse
     response = HttpResponse(path, content_type=mime_type)
     # Set the HTTP header for sending to browser
-    filename = user_file_name[0]['filename']
+    filename = request.session['filename']
     response['Content-Disposition'] = "attachment; filename=%s" % filename
-    messages.success(request, "Audio File Has Started Downloading")
+    
     # Return the response value
     return response
 
@@ -158,8 +163,10 @@ def user_pdf_translate(request):
                 # # extracting the text from the PDF
                 text += from_page.extractText()
             translator = Translator(service_urls=['translate.googleapis.com'])
-            data = translator.translate(text, dest=request.POST['to_language'])
-            print(data.text)
+            if request.POST['from_language'] == 'auto':
+                data = translator.translate(text, dest=request.POST['to_language'])
+            else:
+                data = translator.translate(text,src=request.POST['from_language'], dest=request.POST['to_language'])
             text = data.text
             form = PDFtranslate()
             messages.success(request, "PDF Translated Successfully")

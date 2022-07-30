@@ -1,4 +1,4 @@
 def handle_uploaded_file(f):  
-    with open('pdfconv/static/upload/'+f.name, 'wb+') as destination:  
+    with open('media/pdf/'+f.name, 'wb+') as destination:  
         for chunk in f.chunks():  
             destination.write(chunk)  
