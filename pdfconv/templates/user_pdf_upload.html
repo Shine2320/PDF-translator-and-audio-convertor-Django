@@ -16,10 +16,11 @@ User Home page
     <form method="POST" class="post-form" enctype="multipart/form-data">  
         {% csrf_token %}
         {{ pdf_upload|crispy }}  
-            <button type="submit" class="btn btn-primary">Convert</button>  
+        <br>
+            <button type="submit" class="btn btn-primary">Convert</button>&nbsp;&nbsp;&nbsp;&nbsp;  
             {%if status == 'success' %}
             <a href="user_audio_download" class="btn btn-success">Download</a>
-            <a href="user_audio_play" class="btn btn-warning">Play</a>
+           
             {%endif%}
     </form>  
 </div>
