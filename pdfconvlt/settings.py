@@ -10,22 +10,30 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 from django.contrib.messages import constants as messages
-from pathlib import Path
+import dj_database_url
 import os
+from django.test.runner import DiscoverRunner
+from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+IS_HEROKU = "DYNO" in os.environ
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-+6@ve(i1!=7te(f6yx%yylxc95woze8=+ng(_*#iy+ub7v(m9j'
 
+
+if 'SECRET_KEY' in os.environ:
+    SECRET_KEY = os.environ["SECRET_KEY"]
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if not IS_HEROKU:
+    DEBUG = True
 
-ALLOWED_HOSTS = []
+if IS_HEROKU:
+    ALLOWED_HOSTS = ["*"]
+else:
+    ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -73,7 +81,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'pdfconvlt.wsgi.application'
-
+MAX_CONN_AGE = 600
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
@@ -84,7 +92,10 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
+if "DATABASE_URL" in os.environ:
+    # Configure Django for DATABASE_URL environment variable.
+    DATABASES["default"] = dj_database_url.config(
+        conn_max_age=MAX_CONN_AGE, ssl_require=True)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
