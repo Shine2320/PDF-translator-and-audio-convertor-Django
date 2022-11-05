@@ -20,3 +20,5 @@ google_client_secret.json
 domains.txt
 static_root
 media
+.idea/
+.venv/
