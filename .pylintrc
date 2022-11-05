@@ -1,0 +1,10 @@
+[MASTER]
+good-names=_,i,j,k,e,qs,pk,setUp,tearDown,urlpatterns
+load-plugins=pylint_django
+django-settings-module=main.settings_dev
+ignore=missing-docstring
+ignore=wildcard-import
+ignore=unused-wildcard-import
+
+[pre-commit-hook]
+limit=9
