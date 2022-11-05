@@ -69,16 +69,15 @@ def user_pdf_upload(request):
             user_pdf = UserPDF()
             unique_id = get_random_string(length=32)
             request.session['unique_id'] = unique_id
-            print(unique_id)
             user_instance = User.objects.get(id=request.user.id)
             user_pdf.user = user_instance
-            user_pdf.unique_id = unique_id  # add this line
+            user_pdf.unique_id = unique_id
             user_pdf.pdffile = request.FILES['file']
             user_pdf.save()
-            handle_uploaded_file(request.FILES['file'])
-            user_file_name = UserPDF.objects.values('pdffile').filter(user=request.user.id, unique_id=unique_id)
+            #handle_uploaded_file(request.FILES['file'])
+            
             # path of the PDF file
-            path = open("media/" + user_file_name[0]['pdffile'], 'rb')
+            path = open("media/" + str(user_pdf.pdffile), 'rb')
             # creating a PdfFileReader object
             pdfReader = PyPDF2.PdfFileReader(path)
             # the page with which you want to start
@@ -90,14 +89,15 @@ def user_pdf_upload(request):
                 # # extracting the text from the PDF
                 text += from_page.extractText()
                 # reading the text
-            filename = user_file_name[0]['pdffile']
-            dummy, filename = filename.split('/')
-            filename, dummy = filename.split('_')
+            filename = request.FILES['file'].name
+            
+            # dummy, filename = filename.split('/')
+            # filename, dummy = filename.split('_')
             tts = gTTS(text)
-            tts.save("media/audio/" + filename + "converted.mp3")
+            tts.save("media/audio/" + filename + " converted.mp3")
             audio_save = UserAudio()
             audio_save.pdf = user_pdf
-            audio_save.filename = filename + "converted.mp3"
+            audio_save.filename = filename + " converted.mp3"
             audio_save.save()
             status = "success"
             messages.success(request, "PDF Converted Successfully")
@@ -143,7 +143,7 @@ def user_pdf_translate(request):
             user_pdf.unique_id = unique_id  # add this line
             user_pdf.pdffile = request.FILES['file']
             user_pdf.save()
-            handle_uploaded_file(request.FILES['file'])
+            # handle_uploaded_file(request.FILES['file'])
             user_file_name = UserPDF.objects.values('pdffile').filter(user=request.user.id, unique_id=unique_id)
             # path of the PDF file
             path = open("media/" + user_file_name[0]['pdffile'], 'rb')
